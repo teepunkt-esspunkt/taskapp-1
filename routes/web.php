@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UserImage;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\SessionController;
@@ -38,6 +39,15 @@ Route::middleware('auth')->group(function() {
        $notification->markAsRead();
        return back();
     });
+
+    Route::get('/users', function() {
+        $users = User::all();
+        return view('users.index', compact('users'));
+    })->name('users.index');
+
+    Route::get('/userimage/{user}/create', [UserImage::class, 'create'])->name('userimage.create');
+    Route::post('/userimage/{user}', [UserImage::class, 'store'])->name('userimage.store');
+
 
 });
 

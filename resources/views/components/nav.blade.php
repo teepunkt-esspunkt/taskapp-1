@@ -8,6 +8,10 @@
                 class="text-sm {{ request()->routeIs('tasks.*') ? 'font-medium' : 'opacity-50 hover:opacity-100' }}">
                 Übersicht
             </a>
+            <a href="{{ route('users.index') }}"
+                class="text-sm {{ request()->routeIs('users.index') ? 'font-medium' : 'opacity-50 hover:opacity-100' }}">
+                Benutzer
+            </a>
             @guest
                 <a href="{{ route('login') }}" class="text-sm opacity-80"> Log in </a>
                 <a href="{{ route('register') }}" class="btn btn-primary btn-sm"> Register </a>
