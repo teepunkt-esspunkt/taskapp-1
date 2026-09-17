@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Task;
+use App\Models\User;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,5 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+        Gate::define('task-view',function(User $user,Task $task){
+            //return $user->id === $task->user_id ? Response::allow() : Response::denyAsNotFound();
+            return true;
+        });
     }
 }

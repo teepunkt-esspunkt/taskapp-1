@@ -11,6 +11,7 @@
                 </span>
             </div>
             <p class="mt-6 leading-relaxed"> {{ $task->description }} </p>
+            <p>{{ $task->users->pluck('name')->implode(', ') }}</p>
         </div>
     </article>
 </x-layout>

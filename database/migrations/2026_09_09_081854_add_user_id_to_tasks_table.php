@@ -12,10 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
+            /*
             $table->foreignId('user_id')
             ->nullable() // Da wir bereits task ohne User id haben würde es zu einem fehler kommen ohne nullable
             ->constrained()
             ->cascadeOnDelete(); //wird der user, der den task erstellt hat, gelöscht, wird auch der task gelöscht
+            */
         });
     }
 

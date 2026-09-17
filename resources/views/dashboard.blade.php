@@ -31,7 +31,8 @@
                         <a href="{{ route('tasks.show', $task) }}" 
                             class="{{ $task->done ? 'opacity-50 line-through' : 'font-medium hover:text-primary' }}">
                             {{ $task->title }}
-                        </a>
+                        </a><br>
+                        <p>{{ $task->users->pluck('name')->implode(', ') }}</p>
                     </div>
 
                     <span class="badge badge-sm {{ $task->done ? 'badge-success' : 'badge-ghost' }}">

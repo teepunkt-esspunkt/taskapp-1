@@ -5,6 +5,10 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
 
 // Route::get('/', function() {
 //     return view('welcome');
@@ -28,6 +32,13 @@ Route::middleware('auth')->group(function() {
     Route::post('/logout', [SessionController::class, 'destroy'])->name('logout');
     //Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Notifications 
+    Route::get('/notifications/{id}',function($id) {
+       $notification = auth()->user()->unreadNotifications->firstWhere('id',$id);
+       $notification->markAsRead();
+       return back();
+    });
+
 });
 
 
@@ -37,6 +48,19 @@ Route::middleware('guest')->group(function() {
     Route::post('/register', [RegistrationController::class, 'store']);
 
     //Session
-    Route::get('/login', [SessionController::class, 'create'])->name('login');
+    Route::get('/login', [SessionController::class, 'create'])->name('login'); // Wichtig für Weiterleitung (name)
     Route::post('/login', [SessionController::class, 'store']);
+});
+
+Route::get('/dbtest',function(){
+    //$users = DB::select('SELECT * FROM users');  // Array
+    //$users = DB::table('users')->get();          // Collections
+    //$users = User::where('id',1)->get(); 
+    $users = User::get(); 
+    $users_id = $users->pluck('id')->toArray();
+    $id = Arr::random($users_id);
+    //return dump($users_id);
+    //return dump($id);
+    //return $users;
+    return fake()->address();
 });

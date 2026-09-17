@@ -3,7 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
+use App\Notifications\PushToTask;
+use App\Notifications\PullToTask;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+
+//use Illuminate\Support\Facades\Gate;
+
 
 class TaskController extends Controller
 {
@@ -42,25 +49,38 @@ class TaskController extends Controller
         // if(! auth()->check()) {
         //     return redirect()->route('login'); // Redirect für nicht authorisierte user
         // }
-        
         return view('tasks.show', compact('task'));  //return view('tasks.show', ['task' => $task]); 
     }
 
     public function create()
     {
-        return view('tasks.create');
+        $users = User::all();
+        //dd($users);
+        return view('tasks.create',compact('users'));
     }
 
     public function store(Request $request)
     {
+        //dd($request->user);
         $validated = $request->validate([
             'title'         => ['required', 'string', 'max:50'],
             'description'   => ['required', 'string', 'max:500'],
+            'user'          => ['required'],
         ]);
-        $validated['user_id'] = auth()->id(); // Der aktuell eingeloggte User
+        //$validated['user_id'] = auth()->id(); // Der aktuell eingeloggte User
         $validated['done'] = false;
 
-        Task::create($validated);
+        $task = Task::create($validated);
+        //dd($task);
+        // für das Schreiben in die Zwischentabelle
+        $task->users()->attach($request->user);
+
+        // Benachrichtigungen an die User (Notifications)
+        foreach($task->users as $user)
+        {
+           $user->notify(new PushToTask($task));
+        }
+
 
         return redirect()->route('dashboard')->with('success', 'Aufgabe erfolgreich angelegt');
     }
@@ -68,26 +88,48 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         // muss in edit, update, destroy und toggle, da sonst gefälschte anfragen durchgehen würden
-        abort_if($task->user_id !== auth()->id(), 404);
-        return view('tasks.edit', compact('task'));
+        //abort_if($task->user_id !== auth()->id(), 404);
+        Gate::authorize('task-view',$task);
+        $users = User::all();
+        return view('tasks.edit', compact('task','users'));
     }
 
     public function update(Request $request, Task $task)
     {
-        abort_if($task->user_id !== auth()->id(), 404);
+        //abort_if($task->user_id !== auth()->id(), 404);
+        Gate::authorize('task-view',$task);
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:50'],
-            'description' => ['required', 'string', 'max:500']
+            'description' => ['required', 'string', 'max:500'],
+            'user'   => ['required'],
         ]);
 
-        $task->update($validated);
+        $task->update($validated); // Update in der tasks-Tabelle
 
-        return redirect()->route('tasks.show', $task)->with('success', 'Aufgabe aktualisiert');
+        // Aktualisieren der Zwischentabelle task_user (abgewählte löschen, Neu User setzen)
+        $users = $task->users()->sync($request->user);
+        //dd($users);
+        // Benachrichtigungen an die User (Notifications)
+        foreach($users['attached'] as $userid)
+        {
+           $user = User::find($userid);
+           $user->notify(new PushToTask($task));
+        }
+
+        foreach($users['detached'] as $userid)
+        {
+           $user = User::find($userid);
+           $user->notify(new PullToTask($task));
+        }
+
+        //return redirect()->route('tasks.show', $task)->with('success', 'Aufgabe aktualisiert');
+        return redirect()->route('dashboard', $task)->with('success', 'Aufgabe aktualisiert');
     }
 
     public function destroy(Task $task)
     {
-        abort_if($task->user_id !== auth()->id(), 404);
+        //abort_if($task->user_id !== auth()->id(), 404);
+        //Gate::authorize('task-view',$task);
         $task->delete();
 
         return redirect()->route('dashboard')->with('success', 'Aufgabe gelöscht');
@@ -98,8 +140,8 @@ class TaskController extends Controller
     public function toggle(Task $task)
     {
         //nur der Ersteller darf seine Aufgabe umschalten
-        abort_if($task->user_id !== auth()->id(), 403);
-
+        //abort_if($task->user_id !== auth()->id(), 403);
+        Gate::authorize('task-view',$task);
         $task->done = !$task->done;
         $task->save();
 

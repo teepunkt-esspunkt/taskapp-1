@@ -22,8 +22,10 @@ class RegistrationController extends Controller
 
         
         $user = User::create($validated);
+        //dd($user);
         auth()->login($user); //falscher alarm durch vs code, alternativ über facades
 
+        // Zur Sicherheit neue Session-ID
         $request->session()->regenerate(); // Sicherheitsmaßnahme
 
         return redirect()->route('tasks.index')->with('success', 'Willkommen zur TaskApp, ' . $user->name . '!');

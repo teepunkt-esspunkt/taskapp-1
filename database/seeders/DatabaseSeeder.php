@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,13 +17,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $users = User::factory(10)->create();
+        // Ids ermitteln und in Array legen
+        $user_ids = $users->pluck('id')->toArray();
 
         // User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-
+        /*
         $tasks = [
             ['title' => 'IT Basics', 'description' => 'Grundlegende Programmierung', 'done' => true],
             ['title' => 'Laravel Basics', 'description' => 'Routing und Controller in Laravel', 'done' => true],
@@ -36,6 +39,6 @@ class DatabaseSeeder extends Seeder
 
         foreach($tasks as $task)
             Task::create($task);
-
+        */
     }
 }

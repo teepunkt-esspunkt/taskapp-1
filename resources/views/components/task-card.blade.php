@@ -18,6 +18,6 @@
         </div>
 
         <p class="mt-1">{{ $task->description }}</p>
-
+        <p>{{ $task->users->pluck('name')->implode(', ') }}</p>
     </div>
 </article>
